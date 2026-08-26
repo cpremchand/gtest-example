@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -13,6 +14,8 @@ class HtmlReportListener : public ::testing::EmptyTestEventListener {
 
   void OnTestProgramStart(const ::testing::UnitTest &unit_test) override;
   void OnTestStart(const ::testing::TestInfo &test_info) override;
+  void OnTestPartResult(
+      const ::testing::TestPartResult &test_part_result) override;
   void OnTestEnd(const ::testing::TestInfo &test_info) override;
   void OnTestProgramEnd(const ::testing::UnitTest &unit_test) override;
 
@@ -23,6 +26,7 @@ class HtmlReportListener : public ::testing::EmptyTestEventListener {
 
   std::ofstream report_;
   std::string executable_name_;
+  std::vector<std::string> assertion_failures_;
   unsigned int tests_run_;
   unsigned int tests_passed_;
   bool closed_;

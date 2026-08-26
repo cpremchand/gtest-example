@@ -172,6 +172,8 @@ your browser.
 Each test executable also writes a standalone GTest lifecycle report named
 ``<exe name>-test-report.html`` in ``_build``. The report contains test suite
 and case outcomes, execution metadata, and a total success-path summary. The
+failed test cases include expandable GoogleTest assertion details, including
+the expected and actual values when GoogleTest provides them.
 engineer identifier defaults to ``$USER`` and can be overridden with
 ``TESTED_BY=identifier ./build_run.sh``. A custom report location can be set
 for an individual executable with ``GTEST_HTML_REPORT=/path/report.html``.

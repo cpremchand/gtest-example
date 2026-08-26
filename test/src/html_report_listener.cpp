@@ -56,7 +56,16 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
   report_.flush();
 }
 
-void HtmlReportListener::OnTestStart(const ::testing::TestInfo &) {}
+void HtmlReportListener::OnTestStart(const ::testing::TestInfo &) {
+  assertion_failures_.clear();
+}
+
+void HtmlReportListener::OnTestPartResult(
+    const ::testing::TestPartResult &test_part_result) {
+  if (test_part_result.failed()) {
+    assertion_failures_.push_back(test_part_result.summary());
+  }
+}
 
 void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
   ++tests_run_;
@@ -71,6 +80,21 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
           << "</td><td>" << EscapeHtml(test_info.name()) << "</td><td class=\""
       << (passed ? "pass\">PASS" : "fail\">FAIL")
       << "</td></tr>\n";
+  report_ << "<tr><td colspan=\"3\"><details><summary>Assertion details</summary>";
+  if (assertion_failures_.empty()) {
+    report_ << "<p>No failed assertions.</p>";
+  } else {
+    report_ << "<ul>";
+    for (std::vector<std::string>::const_iterator failure =
+             assertion_failures_.begin();
+         failure != assertion_failures_.end(); ++failure) {
+      report_ << "<li><pre>" << EscapeHtml(*failure) << "</pre></li>";
+    }
+    report_ << "</ul></details></td></tr>\n";
+  }
+  if (assertion_failures_.empty()) {
+    report_ << "</details></td></tr>\n";
+  }
   report_.flush();
 }
 
