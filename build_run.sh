@@ -46,6 +46,7 @@ EXE[runSimpleTests]=0
 EXE[runFailingTests]=0
 EXE[runFixtureTests]=0
 EXE[runParamTests]=0
+EXE[runSignalAccessTests]=0
 
 # Create array of executable names to store code coverage results
 declare -A COV
@@ -53,6 +54,7 @@ COV[runSimpleTests]=0
 COV[runFailingTests]=0
 COV[runFixtureTests]=0
 COV[runParamTests]=0
+COV[runSignalAccessTests]=0
 
 FAIL=0          # Flag if anything fails
 COV_THRESH=100  # Min threshold for code coverage

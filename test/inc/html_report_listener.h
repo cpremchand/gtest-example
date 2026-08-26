@@ -7,6 +7,8 @@
 
 #include <gtest/gtest.h>
 
+#include "test/inc/signal_access_reporter.h"
+
 class HtmlReportListener : public ::testing::EmptyTestEventListener {
  public:
   explicit HtmlReportListener(const std::string &executable_name);

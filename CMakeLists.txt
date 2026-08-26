@@ -21,16 +21,25 @@ set(CMAKE_EXE_LINKER_FLAGS "-lgcov")
 ## Define executables for each test suite
 set(SIMPLE "runSimpleTests")
 add_executable(${SIMPLE} "test/src/simple_tests.cpp" "test/src/test_main.cpp"
-			   "test/src/html_report_listener.cpp" "code/src/easy_math.cpp")
+			   "test/src/html_report_listener.cpp"
+			   "test/src/signal_access_reporter.cpp" "code/src/easy_math.cpp")
 
 set(FAILING "runFailingTests")
 add_executable(${FAILING} "test/src/failing_tests.cpp" "test/src/test_main.cpp"
-			   "test/src/html_report_listener.cpp" "code/src/easy_math.cpp")
+			   "test/src/html_report_listener.cpp"
+			   "test/src/signal_access_reporter.cpp" "code/src/easy_math.cpp")
 
 set(FIXTURE "runFixtureTests")
 add_executable(${FIXTURE} "test/src/fixture_tests.cpp" "test/src/test_main.cpp"
-			   "test/src/html_report_listener.cpp" "code/src/easy_math.cpp")
+			   "test/src/html_report_listener.cpp"
+			   "test/src/signal_access_reporter.cpp" "code/src/easy_math.cpp")
 
 set(PARAM "runParamTests")
 add_executable(${PARAM} "test/src/parametric_tests.cpp" "test/src/test_main.cpp"
-			   "test/src/html_report_listener.cpp" "code/src/easy_math.cpp")
+			   "test/src/html_report_listener.cpp"
+			   "test/src/signal_access_reporter.cpp" "code/src/easy_math.cpp")
+
+set(SIGNAL_ACCESS "runSignalAccessTests")
+add_executable(${SIGNAL_ACCESS} "test/src/signal_access_tests.cpp"
+			   "test/src/test_main.cpp" "test/src/html_report_listener.cpp"
+			   "test/src/signal_access_reporter.cpp" "code/src/easy_math.cpp")

@@ -58,6 +58,7 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
 
 void HtmlReportListener::OnTestStart(const ::testing::TestInfo &) {
   assertion_failures_.clear();
+  ClearSignalAccessLog();
 }
 
 void HtmlReportListener::OnTestPartResult(
@@ -95,6 +96,19 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
   if (assertion_failures_.empty()) {
     report_ << "</details></td></tr>\n";
   }
+  report_ << "<tr><td colspan=\"3\"><details><summary>Signal access order</summary>";
+  if (SignalAccessLog().empty()) {
+    report_ << "<p>No signal reads or writes recorded.</p>";
+  } else {
+    report_ << "<ol>";
+    for (std::vector<std::string>::const_iterator access =
+             SignalAccessLog().begin();
+         access != SignalAccessLog().end(); ++access) {
+      report_ << "<li><code>" << EscapeHtml(*access) << "</code></li>";
+    }
+    report_ << "</ol>";
+  }
+  report_ << "</details></td></tr>\n";
   report_.flush();
 }
 

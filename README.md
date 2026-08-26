@@ -1,3 +1,7 @@
+
+The ``runSignalAccessTests`` executable provides a complete local example of
+these wrappers and can be run with ``./build_run.sh -report``. Its report is
+written to ``_build/runSignalAccessTests-test-report.html``.
 # GTest Example Repo
 
 This is a simple example repo illustrating how to use GTest to test C++ code. As
@@ -181,6 +185,28 @@ The software metadata fields can be supplied with ``SOFTWARE_DLL_NAME``,
 ``MASTER_SIGNAL_LIST_NAME``, and ``SW_VERSION``.
 These reports are execution logs; the separate ``lcov``/``genhtml`` reports
 remain responsible for source line coverage.
+
+#### Signal access trace
+
+If a wrapper reads or writes simulator signals, call the reporting bridge at
+the point where the operation occurs. The listener preserves the call order
+for each test case:
+
+```
+float read_sim_signal(const std::string &signal_name) {
+  RecordSignalRead(signal_name);
+  return simulator_read(signal_name);
+}
+
+void write_sim_signal(const std::string &signal_name, float value) {
+  RecordSignalWrite(signal_name, value);
+  simulator_write(signal_name, value);
+}
+```
+
+Include ``test/inc/signal_access_reporter.h`` wherever these wrappers are
+implemented. The report will show entries such as ``READ: EngineSpeed`` and
+``WRITE: TargetSpeed = 1200`` in the same order as the wrapper calls.
 
 
 #### Clean
