@@ -77,7 +77,10 @@ make || exit
 for test in "${!EXE[@]}"; do
     echo -e "\n${CYAN_B}Running $test...${NC}"
     GTEST_HTML_REPORT="$PWD/${test}-test-report.html" \
-    TESTED_BY="${TESTED_BY:-${USER:-unknown}}" ./$test || EXE[$test]=1
+    TESTED_BY="${TESTED_BY:-${USER:-unknown}}" \
+    SOFTWARE_DLL_NAME="${SOFTWARE_DLL_NAME:-unknown}" \
+    MASTER_SIGNAL_LIST_NAME="${MASTER_SIGNAL_LIST_NAME:-unknown}" \
+    SW_VERSION="${SW_VERSION:-unknown}" ./$test || EXE[$test]=1
 done
 
 # Grab code coverage

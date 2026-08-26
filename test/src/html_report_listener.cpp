@@ -24,6 +24,10 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
     return;
   }
   const char *tested_by = std::getenv("TESTED_BY");
+  const char *software_dll_name = std::getenv("SOFTWARE_DLL_NAME");
+  const char *master_signal_list_name =
+      std::getenv("MASTER_SIGNAL_LIST_NAME");
+  const char *sw_version = std::getenv("SW_VERSION");
   report_ << "<!doctype html><html><head><meta charset=\"utf-8\"><title>GTest report</title>"
           << "<style>body{font:15px sans-serif;margin:2rem;color:#20252b}"
           << ".banner{background:#17324d;color:#fff;padding:1rem 1.25rem}"
@@ -39,6 +43,15 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
           << "</div><div><strong>Execution Timestamp</strong><br>"
           << ExecutionTimestamp() << "</div><div><strong>Environment</strong><br>"
           << EscapeHtml(EnvironmentStatus())
+          << "</div><div><strong>Software DLL Name</strong><br>"
+          << EscapeHtml(software_dll_name == NULL ? "unknown"
+                                                   : software_dll_name)
+          << "</div><div><strong>Master Signal List Name</strong><br>"
+          << EscapeHtml(master_signal_list_name == NULL
+                            ? "unknown"
+                            : master_signal_list_name)
+          << "</div><div><strong>Software Version</strong><br>"
+          << EscapeHtml(sw_version == NULL ? "unknown" : sw_version)
           << "</div></section><table><thead><tr><th>Test Suite</th><th>Test Case</th><th>Outcome</th></tr></thead><tbody>\n";
   report_.flush();
 }
@@ -65,8 +78,8 @@ void HtmlReportListener::OnTestProgramEnd(const ::testing::UnitTest &) {
   if (!report_.is_open() || closed_) {
     return;
   }
-  report_ << "</tbody></table><div class=\"summary\">Tests run: "
-          << tests_run_ << " | Success paths: " << tests_passed_ << " | Failed: "
+  report_ << "</tbody></table><div class=\"summary\">Total Count: "
+          << tests_run_ << " | PASS Count : " << tests_passed_ << " | FAIL Count : "
           << (tests_run_ - tests_passed_) << "</div></body></html>\n";
   report_.flush();
   closed_ = true;

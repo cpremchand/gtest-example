@@ -175,6 +175,8 @@ and case outcomes, execution metadata, and a total success-path summary. The
 engineer identifier defaults to ``$USER`` and can be overridden with
 ``TESTED_BY=identifier ./build_run.sh``. A custom report location can be set
 for an individual executable with ``GTEST_HTML_REPORT=/path/report.html``.
+The software metadata fields can be supplied with ``SOFTWARE_DLL_NAME``,
+``MASTER_SIGNAL_LIST_NAME``, and ``SW_VERSION``.
 These reports are execution logs; the separate ``lcov``/``genhtml`` reports
 remain responsible for source line coverage.
 
