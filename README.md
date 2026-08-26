@@ -169,6 +169,15 @@ as ``<exe name>-html`` (e.g. ``runTests-html``).
 View the reports by opening the appropriate ``<exe name>-html/index.html`` in
 your browser.
 
+Each test executable also writes a standalone GTest lifecycle report named
+``<exe name>-test-report.html`` in ``_build``. The report contains test suite
+and case outcomes, execution metadata, and a total success-path summary. The
+engineer identifier defaults to ``$USER`` and can be overridden with
+``TESTED_BY=identifier ./build_run.sh``. A custom report location can be set
+for an individual executable with ``GTEST_HTML_REPORT=/path/report.html``.
+These reports are execution logs; the separate ``lcov``/``genhtml`` reports
+remain responsible for source line coverage.
+
 
 #### Clean
 

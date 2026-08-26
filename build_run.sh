@@ -76,7 +76,8 @@ make || exit
 # Run tests
 for test in "${!EXE[@]}"; do
     echo -e "\n${CYAN_B}Running $test...${NC}"
-    ./$test || EXE[$test]=1
+    GTEST_HTML_REPORT="$PWD/${test}-test-report.html" \
+    TESTED_BY="${TESTED_BY:-${USER:-unknown}}" ./$test || EXE[$test]=1
 done
 
 # Grab code coverage
@@ -105,7 +106,8 @@ for test in "${!EXE[@]}"; do
     # Grab coverage status (potentially over multiple files)
     for val in ${COV[$test]}; do
         echo -n "$PREFIX Coverage: "
-        if (( $(echo "$val >= $COV_THRESH" |bc -l) )); then
+        if awk -v value="$val" -v threshold="$COV_THRESH" \
+            'BEGIN { exit !(value >= threshold) }'; then
             echo -e "${GREEN_B}$val${NC}"
         else
             echo -e "${RED_B}$val${NC}"
