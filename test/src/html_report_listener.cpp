@@ -128,7 +128,8 @@ std::string FormatAssertionStep(const std::string &summary) {
 
 HtmlReportListener::HtmlReportListener(const std::string &executable_name)
     : executable_name_(executable_name), tests_run_(0), tests_passed_(0),
-      next_step_number_(1), closed_(false) {
+      next_step_number_(1), start_time_point_(std::chrono::steady_clock::now()),
+      last_step_time_point_(start_time_point_), closed_(false) {
   const char *report_path = std::getenv("GTEST_HTML_REPORT");
   report_.open(report_path == NULL ? "gtest-report.html" : report_path);
   start_time_ = ExecutionTimestamp();
@@ -190,6 +191,7 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
 void HtmlReportListener::OnTestStart(const ::testing::TestInfo &) {
   assertion_failures_.clear();
   ClearSignalAccessLog();
+  last_step_time_point_ = std::chrono::steady_clock::now();
 }
 
 void HtmlReportListener::OnTestPartResult(
@@ -214,17 +216,29 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
                                  test_info.test_suite_name() +
                                  " | Case: " + test_info.name();
 
-  row_html << "<tr><td>" << next_step_number_++ << "</td><td>0.000</td><td>"
+  const std::chrono::steady_clock::time_point now =
+      std::chrono::steady_clock::now();
+  const double suite_seconds =
+      std::chrono::duration<double>(now - last_step_time_point_).count();
+  row_html << "<tr><td>" << next_step_number_++ << "</td><td>"
+           << FormatElapsedSeconds(suite_seconds) << "</td><td>"
            << EscapeHtml(description) << "</td><td class=\""
            << (passed ? "pass\">(Passed)" : "fail\">(Failed)")
            << "</td></tr>\n";
+  last_step_time_point_ = now;
 
   if (!SignalAccessLog().empty()) {
     for (std::vector<std::string>::const_iterator access =
              SignalAccessLog().begin();
          access != SignalAccessLog().end(); ++access) {
-      row_html << "<tr><td>" << next_step_number_++ << "</td><td>0.000</td><td>"
+      const std::chrono::steady_clock::time_point access_now =
+          std::chrono::steady_clock::now();
+      const double access_seconds =
+          std::chrono::duration<double>(access_now - last_step_time_point_).count();
+      row_html << "<tr><td>" << next_step_number_++ << "</td><td>"
+               << FormatElapsedSeconds(access_seconds) << "</td><td>"
                << EscapeHtml(FormatSignalLogStep(*access)) << "</td><td></td></tr>\n";
+      last_step_time_point_ = access_now;
     }
   }
 
@@ -232,8 +246,15 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
     for (std::vector<std::string>::const_iterator failure =
              assertion_failures_.begin();
          failure != assertion_failures_.end(); ++failure) {
-      row_html << "<tr><td>" << next_step_number_++ << "</td><td>0.000</td><td>"
-               << EscapeHtml(FormatAssertionStep(*failure)) << "</td><td class=\"fail\">(Failed)</td></tr>\n";
+      const std::chrono::steady_clock::time_point failure_now =
+          std::chrono::steady_clock::now();
+      const double failure_seconds =
+          std::chrono::duration<double>(failure_now - last_step_time_point_).count();
+      row_html << "<tr><td>" << next_step_number_++ << "</td><td>"
+               << FormatElapsedSeconds(failure_seconds) << "</td><td>"
+               << EscapeHtml(FormatAssertionStep(*failure))
+               << "</td><td class=\"fail\">(Failed)</td></tr>\n";
+      last_step_time_point_ = failure_now;
     }
   }
 
@@ -296,6 +317,15 @@ std::string HtmlReportListener::EscapeHtml(const std::string &value) {
     }
   }
   return escaped;
+}
+
+std::string HtmlReportListener::FormatElapsedSeconds(double seconds) {
+  std::ostringstream value;
+  if (seconds < 0.0) {
+    seconds = 0.0;
+  }
+  value << std::fixed << std::setprecision(3) << seconds;
+  return value.str();
 }
 
 std::string HtmlReportListener::ExecutionTimestamp() {

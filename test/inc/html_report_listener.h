@@ -1,6 +1,7 @@
 #ifndef TEST_INC_HTML_REPORT_LISTENER_H_
 #define TEST_INC_HTML_REPORT_LISTENER_H_
 
+#include <chrono>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -25,6 +26,7 @@ class HtmlReportListener : public ::testing::EmptyTestEventListener {
   static std::string EscapeHtml(const std::string &value);
   static std::string EnvironmentStatus();
   static std::string ExecutionTimestamp();
+  static std::string FormatElapsedSeconds(double seconds);
 
   std::ofstream report_;
   std::string executable_name_;
@@ -35,6 +37,8 @@ class HtmlReportListener : public ::testing::EmptyTestEventListener {
   unsigned int tests_run_;
   unsigned int tests_passed_;
   unsigned int next_step_number_;
+  std::chrono::steady_clock::time_point start_time_point_;
+  std::chrono::steady_clock::time_point last_step_time_point_;
   bool closed_;
 };
 
