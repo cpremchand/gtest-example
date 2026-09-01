@@ -34,6 +34,7 @@ class HtmlReportListener : public ::testing::EmptyTestEventListener {
   std::string end_time_;
   unsigned int tests_run_;
   unsigned int tests_passed_;
+  unsigned int next_step_number_;
   bool closed_;
 };
 
