@@ -16,11 +16,12 @@ HtmlReportListener::HtmlReportListener(const std::string &executable_name)
       closed_(false) {
   const char *report_path = std::getenv("GTEST_HTML_REPORT");
   report_.open(report_path == NULL ? "gtest-report.html" : report_path);
+  start_time_ = ExecutionTimestamp();
 }
 
 HtmlReportListener::~HtmlReportListener() {
   if (report_.is_open() && !closed_) {
-    report_ << "</tbody></table></body></html>\n";
+    report_ << "</tbody></table></div></body></html>\n";
   }
 }
 
@@ -33,6 +34,7 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
   const char *master_signal_list_name =
       std::getenv("MASTER_SIGNAL_LIST_NAME");
   const char *sw_version = std::getenv("SW_VERSION");
+  const char *product_id = std::getenv("PRODUCT_ID");
   report_ << "<!doctype html><html><head><meta charset=\"utf-8\"><title>GTest report</title>"
           << "<style>"
           << "body{font-family:Georgia,serif;margin:1em 5% 1em 5%;color:#20252b;background:#f8f9fb}"
@@ -40,14 +42,13 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
           << "h1,h2,h3{border-bottom:2px solid silver}"
           << ".report-header{display:flex;align-items:center;gap:1.2rem;margin:1.5rem 0}"
           << ".logo{width:100px;height:auto;border:none}"
-          << ".meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin:1rem 0 1.5rem}"
-          << ".meta-card{border:1px solid #dfe4e8;border-radius:6px;padding:0.9rem;background:#fff;line-height:1.5}"
+          << ".tableblock{margin-top:1rem}"
           << ".summary-table,.test-table{width:100%;border-collapse:collapse;margin:1rem 0;border:1px solid #dfe4e8;background:#fff}"
           << ".summary-table th,.summary-table td,.test-table th,.test-table td{border:1px solid #dfe4e8;padding:0.7rem;text-align:left;vertical-align:top}"
           << ".test-table th{background:#eef3f8}"
           << ".pass{color:#087f5b;font-weight:bold}"
           << ".fail{color:#c92a2a;font-weight:bold}"
-          << ".sectionbody{margin-top:1rem}"
+          << ".paragraph{margin:0.75rem 0}"
           << ".assertion-list,.signal-list{margin:0.5rem 0 0 1.25rem;padding:0}"
           << "details{margin:0.45rem 0}"
           << "pre{white-space:pre-wrap;word-break:break-word;background:#f6f8fa;border:1px solid #e1e5eb;border-radius:4px;padding:0.75rem;margin:0.5rem 0 0;font-family:\"Courier New\",Courier,monospace;line-height:1.4}"
@@ -56,15 +57,18 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
           << "<div id=\"content\"><div class=\"sect1\"><div class=\"report-header\">"
           << "<img class=\"logo\" src=\"" << kLogoDataUri << "\" alt=\"Logo\" />"
           << "<div><h1>" << EscapeHtml(executable_name_) << "</h1></div></div>"
-          << "<div class=\"meta-grid\">"
-          << "<div class=\"meta-card\"><strong>Tested By</strong><br>" << EscapeHtml(tested_by == NULL ? "unknown" : tested_by) << "</div>"
-          << "<div class=\"meta-card\"><strong>Execution Timestamp</strong><br>" << ExecutionTimestamp() << "</div>"
-          << "<div class=\"meta-card\"><strong>Environment</strong><br>" << EscapeHtml(EnvironmentStatus()) << "</div>"
-          << "<div class=\"meta-card\"><strong>Software DLL Name</strong><br>" << EscapeHtml(software_dll_name == NULL ? "unknown" : software_dll_name) << "</div>"
-          << "<div class=\"meta-card\"><strong>Master Signal List Name</strong><br>" << EscapeHtml(master_signal_list_name == NULL ? "unknown" : master_signal_list_name) << "</div>"
-          << "<div class=\"meta-card\"><strong>Software Version</strong><br>" << EscapeHtml(sw_version == NULL ? "unknown" : sw_version) << "</div>"
-          << "</div><h2 id=\"_test_results\">Test Results</h2><div class=\"sectionbody\">"
-          << "<table class=\"test-table\"><thead><tr><th>Step Num</th><th>Time Taken (secs)</th><th>Description</th><th>Status</th></tr></thead><tbody>\n";
+          << "<div class=\"tableblock\"><table rules=\"all\" width=\"100%\" frame=\"border\" cellspacing=\"0\" cellpadding=\"4\"><caption class=\"title\">Table 1. Test Environment</caption>"
+          << "<tbody><tr><td align=\"left\" valign=\"top\"><p class=\"table\">Parameter</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">Value</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Environment</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(EnvironmentStatus()) << "</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Start Time</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(start_time_) << "</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Stop Time</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(start_time_) << "</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Software Version</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(sw_version == NULL ? "unknown" : sw_version) << "</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Software DLL Name</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(software_dll_name == NULL ? "unknown" : software_dll_name) << "</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">MSL Signal List Name</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(master_signal_list_name == NULL ? "unknown" : master_signal_list_name) << "</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Product ID</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(product_id == NULL ? "" : product_id) << "</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Duration (Hours:Mins:Secs)</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">00:00:00</p></td></tr>"
+          << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Tested By</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(tested_by == NULL ? "unknown" : tested_by) << "</p></td></tr>"
+          << "</tbody></table></div></div>\n";
   report_.flush();
 }
 
@@ -90,44 +94,45 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
     return;
   }
 
+  std::ostringstream row_html;
   const std::string description = std::string("Suite: ") +
                                  test_info.test_suite_name() +
                                  " | Case: " + test_info.name();
 
-  report_ << "<tr><td>" << tests_run_ << "</td><td>0.000</td><td>"
-          << EscapeHtml(description) << "</td><td class=\""
-          << (passed ? "pass\">(Passed)" : "fail\">(Failed)")
-          << "</td></tr>\n";
+  row_html << "<tr><td>" << tests_run_ << "</td><td>0.000</td><td>"
+           << EscapeHtml(description) << "</td><td class=\""
+           << (passed ? "pass\">(Passed)" : "fail\">(Failed)")
+           << "</td></tr>\n";
 
-  report_ << "<tr><td colspan=\"4\"><details><summary>Assertion details</summary>";
+  row_html << "<tr><td colspan=\"4\"><details><summary>Assertion details</summary>";
   if (assertion_failures_.empty()) {
-    report_ << "<p>No failed assertions.</p>";
+    row_html << "<p>No failed assertions.</p>";
   } else {
-    report_ << "<ul class=\"assertion-list\">";
+    row_html << "<ul class=\"assertion-list\">";
     for (std::vector<std::string>::const_iterator failure =
              assertion_failures_.begin();
          failure != assertion_failures_.end(); ++failure) {
-      report_ << "<li><strong>Expected / actual</strong><pre>"
-              << EscapeHtml(*failure) << "</pre></li>";
+      row_html << "<li><strong>Expected / actual</strong><pre>"
+               << EscapeHtml(*failure) << "</pre></li>";
     }
-    report_ << "</ul>";
+    row_html << "</ul>";
   }
-  report_ << "</details></td></tr>\n";
+  row_html << "</details></td></tr>\n";
 
-  report_ << "<tr><td colspan=\"4\"><details><summary>Signal access order</summary>";
+  row_html << "<tr><td colspan=\"4\"><details><summary>Signal access order</summary>";
   if (SignalAccessLog().empty()) {
-    report_ << "<p>No signal reads or writes recorded.</p>";
+    row_html << "<p>No signal reads or writes recorded.</p>";
   } else {
-    report_ << "<ol class=\"signal-list\">";
+    row_html << "<ol class=\"signal-list\">";
     for (std::vector<std::string>::const_iterator access =
              SignalAccessLog().begin();
          access != SignalAccessLog().end(); ++access) {
-      report_ << "<li><code>" << EscapeHtml(*access) << "</code></li>";
+      row_html << "<li><code>" << EscapeHtml(*access) << "</code></li>";
     }
-    report_ << "</ol>";
+    row_html << "</ol>";
   }
-  report_ << "</details></td></tr>\n";
-  report_.flush();
+  row_html << "</details></td></tr>\n";
+  test_rows_.push_back(row_html.str());
 }
 
 void HtmlReportListener::OnTestProgramEnd(const ::testing::UnitTest &) {
@@ -135,20 +140,41 @@ void HtmlReportListener::OnTestProgramEnd(const ::testing::UnitTest &) {
     return;
   }
 
+  end_time_ = ExecutionTimestamp();
   const unsigned int tests_failed = tests_run_ - tests_passed_;
   const double pass_percent =
       tests_run_ == 0 ? 0.0 : (100.0 * tests_passed_) / tests_run_;
   const double fail_percent =
       tests_run_ == 0 ? 0.0 : (100.0 * tests_failed) / tests_run_;
 
-  report_ << "</tbody></table>"
-          << "<div class=\"summary-table\"><div style=\"padding:0.8rem;\"><p>Pass: <span class=\"pass\">"
-          << tests_passed_ << "/" << tests_run_ << " (" << pass_percent
-          << "%)</span></p><p>Fail: <span class=\"fail\">" << tests_failed << "/"
-          << tests_run_ << " (" << fail_percent << "%)</span></p></div></div>"
-          << "</div></div></div></body></html>\n";
+  report_ << "<div class=\"sect1\"><h2 id=\"_test_results\">Test Results</h2>"
+          << "<div class=\"sectionbody\"><p>Pass: <span class=\"pass\">" << tests_passed_
+          << "/" << tests_run_ << " (" << pass_percent << "%)</span></p>"
+          << "<p>Fail: <span class=\"fail\">" << tests_failed << "/" << tests_run_
+          << " (" << fail_percent << "%)</span></p>"
+          << "<div class=\"tableblock\"><table class=\"test-table\"><thead><tr><th>Step Num</th><th>Time Taken (secs)</th><th>Description</th><th>Status</th></tr></thead><tbody>\n";
+  for (std::vector<std::string>::const_iterator row = test_rows_.begin();
+       row != test_rows_.end(); ++row) {
+    report_ << *row;
+  }
+  report_ << "</tbody></table></div></div></div>";
+
+  const std::time_t start_epoch = std::time(NULL) - 1;
+  const std::time_t end_epoch = std::time(NULL);
+  const std::time_t duration_seconds = std::max<long long>(0, end_epoch - start_epoch);
+  const int hours = duration_seconds / 3600;
+  const int minutes = (duration_seconds % 3600) / 60;
+  const int seconds = duration_seconds % 60;
+  std::ostringstream duration;
+  duration << std::setw(2) << std::setfill('0') << hours << ":"
+           << std::setw(2) << std::setfill('0') << minutes << ":"
+           << std::setw(2) << std::setfill('0') << seconds;
+
+  report_.seekp(0, std::ios::end);
   report_.flush();
   closed_ = true;
+  report_ << "</div></body></html>\n";
+  report_.flush();
 }
 
 std::string HtmlReportListener::EscapeHtml(const std::string &value) {
