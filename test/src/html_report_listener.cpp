@@ -57,7 +57,7 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
           << "<div id=\"content\"><div class=\"sect1\"><div class=\"report-header\">"
           << "<img class=\"logo\" src=\"" << kLogoDataUri << "\" alt=\"Logo\" />"
           << "<div><h1>" << EscapeHtml(executable_name_) << "</h1></div></div>"
-          << "<div class=\"tableblock\"><table rules=\"all\" width=\"100%\" frame=\"border\" cellspacing=\"0\" cellpadding=\"4\"><caption class=\"title\">Table 1. Test Environment</caption>"
+          << "<div class=\"tableblock\" style=\"text-align:left;\"><table rules=\"all\" width=\"100%\" frame=\"border\" cellspacing=\"0\" cellpadding=\"4\"><caption class=\"title\" style=\"text-align:left;\">Table 1. Test Environment</caption>"
           << "<tbody><tr><td align=\"left\" valign=\"top\"><p class=\"table\">Parameter</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">Value</p></td></tr>"
           << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Environment</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(EnvironmentStatus()) << "</p></td></tr>"
           << "<tr><td align=\"left\" valign=\"top\"><p class=\"table\">Start Time</p></td><td align=\"left\" valign=\"top\"><p class=\"table\">" << EscapeHtml(start_time_) << "</p></td></tr>"
@@ -152,7 +152,7 @@ void HtmlReportListener::OnTestProgramEnd(const ::testing::UnitTest &) {
           << "/" << tests_run_ << " (" << pass_percent << "%)</span></p>"
           << "<p>Fail: <span class=\"fail\">" << tests_failed << "/" << tests_run_
           << " (" << fail_percent << "%)</span></p>"
-          << "<div class=\"tableblock\"><table class=\"test-table\"><thead><tr><th>Step Num</th><th>Time Taken (secs)</th><th>Description</th><th>Status</th></tr></thead><tbody>\n";
+          << "<div class=\"tableblock\" style=\"text-align:left;\"><table class=\"test-table\" style=\"text-align:left;\"><caption class=\"title\" style=\"text-align:left;\">Table 2. Test Steps</caption><thead><tr><th>Step Num</th><th>Time Taken (secs)</th><th>Description</th><th>Status</th></tr></thead><tbody>\n";
   for (std::vector<std::string>::const_iterator row = test_rows_.begin();
        row != test_rows_.end(); ++row) {
     report_ << *row;
