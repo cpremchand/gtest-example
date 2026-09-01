@@ -77,12 +77,21 @@ make || exit
 
 # Run tests
 for test in "${!EXE[@]}"; do
+    timestamp="$(date +"%d_%b_%Y_%H_%M_%S")"
+    report_name="${test}_${timestamp}"
     echo -e "\n${CYAN_B}Running $test...${NC}"
-    GTEST_HTML_REPORT="$PWD/${test}-test-report.html" \
+    GTEST_HTML_REPORT="$PWD/${report_name}.html" \
     TESTED_BY="${TESTED_BY:-${USER:-unknown}}" \
     SOFTWARE_DLL_NAME="${SOFTWARE_DLL_NAME:-unknown}" \
     MASTER_SIGNAL_LIST_NAME="${MASTER_SIGNAL_LIST_NAME:-unknown}" \
-    SW_VERSION="${SW_VERSION:-unknown}" ./$test || EXE[$test]=1
+    SW_VERSION="${SW_VERSION:-unknown}" ./$test
+    status=$?
+    if [ "$status" -eq 0 ]; then
+        mv "$PWD/${report_name}.html" "$PWD/${report_name}_PASS.html"
+    else
+        mv "$PWD/${report_name}.html" "$PWD/${report_name}_FAIL.html"
+        EXE[$test]=1
+    fi
 done
 
 # Grab code coverage
