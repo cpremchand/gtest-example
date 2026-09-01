@@ -22,7 +22,7 @@ std::string Trim(const std::string &value) {
 }
 
 std::string FormatSignalLogStep(const std::string &signal_entry) {
-  const std::string write_prefix = "WRITE: ";
+  const std::string wriAttempt 4te_prefix = "WRITE: ";
   const std::string read_prefix = "READ: ";
 
   if (signal_entry.compare(0, write_prefix.size(), write_prefix) == 0) {
