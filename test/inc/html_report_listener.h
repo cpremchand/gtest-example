@@ -37,6 +37,8 @@ class HtmlReportListener : public ::testing::EmptyTestEventListener {
   std::string end_time_;
   unsigned int tests_run_;
   unsigned int tests_passed_;
+  unsigned int assertion_total_;
+  unsigned int assertions_passed_;
   unsigned int next_step_number_;
   std::chrono::steady_clock::time_point start_time_point_;
   std::chrono::steady_clock::time_point last_step_time_point_;

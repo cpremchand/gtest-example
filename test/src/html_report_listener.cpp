@@ -1,5 +1,6 @@
 #include "test/inc/html_report_listener.h"
 
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <regex>
@@ -38,7 +39,7 @@ std::string FormatSignalLogStep(const std::string &signal_entry) {
 
   if (signal_entry.compare(0, read_prefix.size(), read_prefix) == 0) {
     const std::string signal_name = Trim(signal_entry.substr(read_prefix.size()));
-    return "Reading the " + signal_name + " from signal";
+    return "Reading the " + signal_name;
   }
 
   return signal_entry;
@@ -145,7 +146,8 @@ std::string FormatAssertionStep(const std::string &summary) {
 
 HtmlReportListener::HtmlReportListener(const std::string &executable_name)
     : executable_name_(executable_name), tests_run_(0), tests_passed_(0),
-      next_step_number_(1), start_time_point_(std::chrono::steady_clock::now()),
+      assertion_total_(0), assertions_passed_(0), next_step_number_(1),
+      start_time_point_(std::chrono::steady_clock::now()),
       last_step_time_point_(start_time_point_), closed_(false) {
   const char *report_path = std::getenv("GTEST_HTML_REPORT");
   report_.open(report_path == NULL ? "gtest-report.html" : report_path);
@@ -242,6 +244,16 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
   if (passed) {
     ++tests_passed_;
   }
+
+  for (std::vector<std::pair<std::string, bool>>::const_iterator result_entry =
+           assertion_results_.begin();
+       result_entry != assertion_results_.end(); ++result_entry) {
+    ++assertion_total_;
+    if (result_entry->second) {
+      ++assertions_passed_;
+    }
+  }
+
   if (!report_.is_open()) {
     return;
   }
@@ -313,17 +325,22 @@ void HtmlReportListener::OnTestProgramEnd(const ::testing::UnitTest &) {
   }
 
   end_time_ = ExecutionTimestamp();
-  const unsigned int tests_failed = tests_run_ - tests_passed_;
+  const unsigned int assertion_failed = assertion_total_ - assertions_passed_;
   const double pass_percent =
-      tests_run_ == 0 ? 0.0 : (100.0 * tests_passed_) / tests_run_;
+      assertion_total_ == 0 ? 0.0 : (100.0 * assertions_passed_) / assertion_total_;
   const double fail_percent =
-      tests_run_ == 0 ? 0.0 : (100.0 * tests_failed) / tests_run_;
+      assertion_total_ == 0 ? 0.0 : (100.0 * assertion_failed) / assertion_total_;
+  std::ostringstream pass_summary_stream;
+  pass_summary_stream << std::fixed << std::setprecision(2) << pass_percent;
+  std::ostringstream fail_summary_stream;
+  fail_summary_stream << std::fixed << std::setprecision(2) << fail_percent;
 
   report_ << "<div class=\"sect1\"><h2 id=\"_test_results\">Test Results</h2>"
-          << "<div class=\"sectionbody\"><p>Pass: <span class=\"pass\">" << tests_passed_
-          << "/" << tests_run_ << " (" << pass_percent << "%)</span></p>"
-          << "<p>Fail: <span class=\"fail\">" << tests_failed << "/" << tests_run_
-          << " (" << fail_percent << "%)</span></p>"
+          << "<div class=\"sectionbody\"><p>Pass: <span class=\"pass\">" << assertions_passed_
+          << "/" << assertion_total_ << " (" << pass_summary_stream.str()
+          << "%)</span></p>"
+          << "<p>Fail: <span class=\"fail\">" << assertion_failed << "/" << assertion_total_
+          << " (" << fail_summary_stream.str() << "%)</span></p>"
           << "<div class=\"tableblock\" style=\"text-align:left;\"><table class=\"test-table\" style=\"text-align:left;\"><caption class=\"title\" style=\"text-align:left;\">Table 2. Test Steps</caption><thead><tr><th>Step Num</th><th>Time Taken (secs)</th><th>Description</th><th>Status</th></tr></thead><tbody>\n";
   for (std::vector<std::string>::const_iterator row = test_rows_.begin();
        row != test_rows_.end(); ++row) {
