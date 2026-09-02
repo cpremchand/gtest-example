@@ -3,12 +3,17 @@
 
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 void ClearSignalAccessLog();
 void RecordSignalRead(const std::string &signal_name);
 void RecordSignalWrite(const std::string &signal_name,
                        const std::string &value);
+
+void ClearAssertionLog();
+void RecordAssertionResult(const std::string &description, bool passed);
+const std::vector<std::pair<std::string, bool>> &AssertionLog();
 
 template <typename ValueType>
 void RecordSignalWrite(const std::string &signal_name, const ValueType &value) {

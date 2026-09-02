@@ -23,7 +23,7 @@ TEST(SignalAccessTests, ReportsReadWriteOrder) {
   write_sim_signal("TargetSpeed", 1500.0F);
   float target_speed = read_sim_signal("TargetSpeed");
 
-  EXPECT_FLOAT_EQ(1500.0F, target_speed);
+  EXPECT_FLOAT_EQ_REPORT(1500.0F, target_speed);
 }
 
 TEST(SignalAccessTests, ReportsMultipleSignalsInCodeOrder) {
@@ -34,6 +34,6 @@ TEST(SignalAccessTests, ReportsMultipleSignalsInCodeOrder) {
 
   // The signal access log should preserve the execution order of each read/write
   // call, and the value read back should match the value previously written.
-  EXPECT_FLOAT_EQ(15.0F, input_a);
-  EXPECT_FLOAT_EQ(20.0F, input_b);
+  EXPECT_FLOAT_EQ_REPORT(15.0F, input_a);
+  EXPECT_FLOAT_EQ_REPORT(20.0F, input_b);
 }

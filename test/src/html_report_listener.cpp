@@ -56,8 +56,25 @@ std::string FormatAssertionStep(const std::string &summary) {
     }
   }
 
+  std::string assertion_kind = "ASSERTION";
+  if (text.find("Expected equality of these values") != std::string::npos ||
+      text.find("Expected equality") != std::string::npos) {
+    assertion_kind = "EXPECT_EQ";
+  } else if (text.find("Expected: true") != std::string::npos ||
+             text.find("Value of:") != std::string::npos) {
+    assertion_kind = "EXPECT_TRUE";
+  } else if (text.find("Expected: false") != std::string::npos) {
+    assertion_kind = "EXPECT_FALSE";
+  } else if (text.find("Which is:") != std::string::npos &&
+             text.find("Expected: ") != std::string::npos) {
+    assertion_kind = "EXPECT_FLOAT_EQ";
+  } else if (text.find("Expected: ") != std::string::npos &&
+             text.find("Actual: ") != std::string::npos) {
+    assertion_kind = "EXPECT_EQ";
+  }
+
   if (lines.size() < 4) {
-    return text;
+    return assertion_kind + ": " + text;
   }
 
   std::string variable_name;
@@ -113,15 +130,15 @@ std::string FormatAssertionStep(const std::string &summary) {
   }
 
   if (!variable_name.empty() && !actual_value.empty() && !expected_value.empty()) {
-    return "Actual value of " + variable_name + " is " + actual_value +
+    return assertion_kind + ": Actual value of " + variable_name + " is " + actual_value +
            ", expecting it to be " + expected_value;
   }
 
   if (!actual_value.empty() && !expected_value.empty()) {
-    return "Actual value is " + actual_value + ", expecting it to be " + expected_value;
+    return assertion_kind + ": Actual value is " + actual_value + ", expecting it to be " + expected_value;
   }
 
-  return text;
+  return assertion_kind + ": " + text;
 }
 
 }  // namespace
@@ -191,18 +208,37 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
 void HtmlReportListener::OnTestStart(const ::testing::TestInfo &) {
   assertion_results_.clear();
   ClearSignalAccessLog();
+  ClearAssertionLog();
   last_step_time_point_ = std::chrono::steady_clock::now();
 }
 
 void HtmlReportListener::OnTestPartResult(
     const ::testing::TestPartResult &test_part_result) {
-  assertion_results_.push_back(
-      std::make_pair(test_part_result.summary(), test_part_result.passed()));
+  const char *summary = test_part_result.summary();
+  if (summary != NULL && summary[0] != '\0') {
+    assertion_results_.push_back(
+        std::make_pair(std::string(summary), test_part_result.passed()));
+  }
 }
 
 void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
+  const ::testing::TestResult *const result = test_info.result();
+  assertion_results_.clear();
+  if (!AssertionLog().empty()) {
+    assertion_results_.assign(AssertionLog().begin(), AssertionLog().end());
+  } else if (result != NULL) {
+    for (int index = 0; index < result->total_part_count(); ++index) {
+      const ::testing::TestPartResult &part = result->GetTestPartResult(index);
+      const char *summary = part.summary();
+      if (summary != NULL && summary[0] != '\0') {
+        assertion_results_.push_back(
+            std::make_pair(std::string(summary), part.passed()));
+      }
+    }
+  }
+
   ++tests_run_;
-  const bool passed = test_info.result()->Passed();
+  const bool passed = result != NULL && result->Passed();
   if (passed) {
     ++tests_passed_;
   }
@@ -237,6 +273,18 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
                << EscapeHtml(FormatSignalLogStep(*access)) << "</td><td></td></tr>\n";
       last_step_time_point_ = access_now;
     }
+  }
+
+  if (passed && assertion_results_.empty()) {
+    const std::chrono::steady_clock::time_point result_now =
+        std::chrono::steady_clock::now();
+    const double result_seconds =
+        std::chrono::duration<double>(result_now - last_step_time_point_).count();
+    row_html << "<tr><td>" << next_step_number_++ << "</td><td>"
+             << FormatElapsedSeconds(result_seconds) << "</td><td>"
+             << EscapeHtml("All assertions passed")
+             << "</td><td class=\"pass\">(Passed)</td></tr>\n";
+    last_step_time_point_ = result_now;
   }
 
   if (!assertion_results_.empty()) {
