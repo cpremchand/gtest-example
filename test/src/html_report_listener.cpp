@@ -189,16 +189,15 @@ void HtmlReportListener::OnTestProgramStart(const ::testing::UnitTest &) {
 }
 
 void HtmlReportListener::OnTestStart(const ::testing::TestInfo &) {
-  assertion_failures_.clear();
+  assertion_results_.clear();
   ClearSignalAccessLog();
   last_step_time_point_ = std::chrono::steady_clock::now();
 }
 
 void HtmlReportListener::OnTestPartResult(
     const ::testing::TestPartResult &test_part_result) {
-  if (test_part_result.failed()) {
-    assertion_failures_.push_back(test_part_result.summary());
-  }
+  assertion_results_.push_back(
+      std::make_pair(test_part_result.summary(), test_part_result.passed()));
 }
 
 void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
@@ -222,9 +221,7 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
       std::chrono::duration<double>(now - last_step_time_point_).count();
   row_html << "<tr><td>" << next_step_number_++ << "</td><td>"
            << FormatElapsedSeconds(suite_seconds) << "</td><td>"
-           << EscapeHtml(description) << "</td><td class=\""
-           << (passed ? "pass\">(Passed)" : "fail\">(Failed)")
-           << "</td></tr>\n";
+           << EscapeHtml(description) << "</td><td></td></tr>\n";
   last_step_time_point_ = now;
 
   if (!SignalAccessLog().empty()) {
@@ -242,19 +239,20 @@ void HtmlReportListener::OnTestEnd(const ::testing::TestInfo &test_info) {
     }
   }
 
-  if (!assertion_failures_.empty()) {
-    for (std::vector<std::string>::const_iterator failure =
-             assertion_failures_.begin();
-         failure != assertion_failures_.end(); ++failure) {
-      const std::chrono::steady_clock::time_point failure_now =
+  if (!assertion_results_.empty()) {
+    for (std::vector<std::pair<std::string, bool>>::const_iterator result =
+             assertion_results_.begin();
+         result != assertion_results_.end(); ++result) {
+      const std::chrono::steady_clock::time_point result_now =
           std::chrono::steady_clock::now();
-      const double failure_seconds =
-          std::chrono::duration<double>(failure_now - last_step_time_point_).count();
+      const double result_seconds =
+          std::chrono::duration<double>(result_now - last_step_time_point_).count();
       row_html << "<tr><td>" << next_step_number_++ << "</td><td>"
-               << FormatElapsedSeconds(failure_seconds) << "</td><td>"
-               << EscapeHtml(FormatAssertionStep(*failure))
-               << "</td><td class=\"fail\">(Failed)</td></tr>\n";
-      last_step_time_point_ = failure_now;
+               << FormatElapsedSeconds(result_seconds) << "</td><td>"
+               << EscapeHtml(FormatAssertionStep(result->first))
+               << "</td><td class=\"" << (result->second ? "pass\">(Passed)" : "fail\">(Failed)")
+               << "</td></tr>\n";
+      last_step_time_point_ = result_now;
     }
   }
 

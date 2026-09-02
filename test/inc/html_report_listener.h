@@ -4,6 +4,7 @@
 #include <chrono>
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -30,7 +31,7 @@ class HtmlReportListener : public ::testing::EmptyTestEventListener {
 
   std::ofstream report_;
   std::string executable_name_;
-  std::vector<std::string> assertion_failures_;
+  std::vector<std::pair<std::string, bool>> assertion_results_;
   std::vector<std::string> test_rows_;
   std::string start_time_;
   std::string end_time_;

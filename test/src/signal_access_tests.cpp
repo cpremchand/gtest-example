@@ -32,6 +32,8 @@ TEST(SignalAccessTests, ReportsMultipleSignalsInCodeOrder) {
   float input_a = read_sim_signal("InputA");
   float input_b = read_sim_signal("InputB");
 
+  // The signal access log should preserve the execution order of each read/write
+  // call, and the value read back should match the value previously written.
   EXPECT_FLOAT_EQ(15.0F, input_a);
   EXPECT_FLOAT_EQ(20.0F, input_b);
 }
