@@ -11,14 +11,9 @@
 /* Test the `add` method
  *****************************************************************************/
 TEST_F(MathsTest, TestAdd) {
-  std::cout << NOTE_PREFIX << "Testing..." << std::endl;
+  const float result = maths->add();
+  const float expected = a + b;
 
-  float result;
-  result = maths->add();
-
-  float expected = a + b;
-
-  // Notice the 'FLOAT' designation in our check
   EXPECT_FLOAT_EQ(expected, result) << ERR_PREFIX
                                     << "Failed to add numbers correctly!";
 }
@@ -26,14 +21,9 @@ TEST_F(MathsTest, TestAdd) {
 /* Test the `mult` method
  *****************************************************************************/
 TEST_F(MathsTest, TestMult) {
-  std::cout << NOTE_PREFIX << "Testing..." << std::endl;
+  const float result = maths->mult();
+  const float expected = a * b;
 
-  float result;
-  result = maths->mult();
-
-  float expected = a * b;
-
-  // Notice the 'FLOAT' designation in our check
   EXPECT_FLOAT_EQ(expected, result) << ERR_PREFIX
                                     << "Failed to multiply numbers correctly!";
 }
@@ -41,14 +31,9 @@ TEST_F(MathsTest, TestMult) {
 /* Test the `sub` method
  *****************************************************************************/
 TEST_F(MathsTest, TestSub) {
-  std::cout << NOTE_PREFIX << "Testing..." << std::endl;
+  const float result = maths->sub();
+  const float expected = a - b;
 
-  float result;
-  result = maths->sub();
-
-  float expected = a - b;
-
-  // Notice the 'FLOAT' designation in our check
   EXPECT_FLOAT_EQ(expected, result) << ERR_PREFIX
                                     << "Failed to subtract numbers correctly!";
 }
@@ -56,14 +41,9 @@ TEST_F(MathsTest, TestSub) {
 /* Test the `div` method
  *****************************************************************************/
 TEST_F(MathsTest, TestDiv) {
-  std::cout << NOTE_PREFIX << "Testing..." << std::endl;
+  const float result = maths->div();
+  const float expected = a / b;
 
-  float result;
-  result = maths->div();
-
-  float expected = a / b;
-
-  // Notice the 'FLOAT' designation in our check
   EXPECT_FLOAT_EQ(expected, result) << ERR_PREFIX
                                     << "Failed to divide numbers correctly!";
 }
